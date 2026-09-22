@@ -1,221 +1,240 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Happy 15th Anniversary!</title>
 
+
 <style>
 
-    html, body {
+    /* =====================================================
+       PAGE
+       ===================================================== */
+
+    html,
+    body {
+
         margin: 0;
         padding: 0;
+
         width: 100%;
         height: 100%;
+
         overflow: hidden;
-        background-color: #fff;
+
+        background: #fff;
+
     }
 
-    #videos {
-        display: flex;
+
+    /* =====================================================
+       TOUCHDESIGNER OUTPUT
+       ===================================================== */
+
+    #processedVideo {
+
+        position: absolute;
+
+        inset: 0;
+
         width: 100%;
         height: 100%;
-    }
 
-    .video-container {
-        position: relative;
-        width: 50%;
-        height: 100%;
-        overflow: hidden;
-        background: #111;
-    }
-
-    video {
-        width: 100%;
-        height: 100%;
         object-fit: cover;
         object-position: center;
+
+        z-index: 1;
+
     }
+
+
+    /* =====================================================
+       LOCAL CAMERA PREVIEW
+       
+       Holobox:
+           1440 x 2560
+
+       Aspect ratio:
+           1440 / 2560 = 9 / 16
+
+       Using 25% of the screen height:
+           2560 × 0.25 = 640px
+
+       At 9:16:
+           640 × (9/16) = 360px
+
+       So on a 1440 x 2560 screen this becomes:
+           360 x 640
+       ===================================================== */
 
     #localVideo {
-        transform: scaleX(-1);
-    }
 
-    .label {
         position: absolute;
-        top: 20px;
-        left: 20px;
+
+        top: 32px;
+        right: 32px;
+
+        height: 25vh;
+        width: auto;
+
+        aspect-ratio: 9 / 16;
+
+        object-fit: cover;
+        object-position: center;
+
+        transform: scaleX(-1);
+
         z-index: 10;
 
-        padding: 8px 12px;
+        background: #fff;
 
-        font-family: Arial, sans-serif;
-        font-size: 14px;
+        border: 3px solid rgba(
+            255,
+            255,
+            255,
+            0.9
+        );
 
-        color: white;
-        background: rgba(0, 0, 0, 0.6);
+        border-radius: 8px;
 
-        border-radius: 4px;
+        box-sizing: border-box;
+
     }
 
-    #status {
-        position: fixed;
-        z-index: 100;
 
-        bottom: 20px;
-        left: 20px;
+    /* =====================================================
+       VERY SUBTLE SHADOW AROUND CAMERA
+       ===================================================== */
 
-        padding: 10px 14px;
+    #localVideo {
 
-        font-family: Arial, sans-serif;
-        font-size: 14px;
+        box-shadow:
+            0 8px 30px rgba(
+                0,
+                0,
+                0,
+                0.35
+            );
 
-        color: white;
-        background: rgba(0, 0, 0, 0.7);
+    }
 
-        border-radius: 4px;
+
+    /* =====================================================
+       HIDE ELEMENTS UNTIL THEY HAVE VIDEO
+       ===================================================== */
+
+    video {
+
+        display: block;
+
     }
 
 </style>
+```
 
 </head>
 
 <body>
 
-<div id="videos">
+```
+<!-- =====================================================
+     TOUCHDESIGNER OUTPUT
+     ===================================================== -->
 
-    <!-- ==================================================
-         LEFT SIDE: CAMERA
-         ================================================== -->
-
-    <div class="video-container">
-
-        <div class="label">
-            CAMERA
-        </div>
-
-        <video
-            id="localVideo"
-            autoplay
-            muted
-            playsinline>
-        </video>
-
-    </div>
+<video
+    id="processedVideo"
+    autoplay
+    playsinline>
+</video>
 
 
-    <!-- ==================================================
-         RIGHT SIDE: TOUCHDESIGNER OUTPUT
-         ================================================== -->
+<!-- =====================================================
+     LOCAL CAMERA PREVIEW
+     ===================================================== -->
 
-    <div class="video-container">
-
-        <div class="label">
-            TOUCHDESIGNER
-        </div>
-
-        <video
-            id="processedVideo"
-            autoplay
-            playsinline>
-        </video>
-
-    </div>
-
-</div>
-
-
-<!-- ==================================================
-     STATUS MESSAGE
-     ================================================== -->
-
-<div id="status">
-    Starting...
-</div>
+<video
+    id="localVideo"
+    autoplay
+    muted
+    playsinline>
+</video>
 
 
 <script>
 
-    // ========================================================
-    // GET REFERENCES TO HTML ELEMENTS
-    // ========================================================
+    // ====================================================
+    // HTML ELEMENTS
+    // ====================================================
 
     const localVideo =
-        document.getElementById("localVideo");
+        document.getElementById(
+            "localVideo"
+        );
+
 
     const processedVideo =
-        document.getElementById("processedVideo");
-
-    const status =
-        document.getElementById("status");
-
-
-    // ========================================================
-    // WEBRTC PEER CONNECTION
-    // ========================================================
-
-    const pc = new RTCPeerConnection({
-
-        iceServers: [
-
-            {
-                urls:
-                    "stun:stun.l.google.com:19302"
-            }
-
-        ]
-
-    });
+        document.getElementById(
+            "processedVideo"
+        );
 
 
-    // ========================================================
+    // ====================================================
+    // CLOUDFARE WORKER / WEBSOCKET
+    // ====================================================
+
+    const SIGNALING_URL =
+        "wss://body-signaling.reeseyh18.workers.dev/ws";
+
+
+    // ====================================================
+    // WEBRTC CONNECTION
+    // ====================================================
+
+    const pc =
+        new RTCPeerConnection({
+
+            iceServers: [
+
+                {
+                    urls:
+                        "stun:stun.l.google.com:19302"
+                }
+
+            ]
+
+        });
+
+
+    // ====================================================
     // VARIABLES
-    // ========================================================
+    // ====================================================
 
     let cameraStream = null;
 
     let started = false;
 
-
-    // ICE candidates can sometimes arrive before
-    // the remote description has been set.
     const pendingCandidates = [];
 
 
-    // ========================================================
-    // CONNECT TO NODE.JS SIGNALING SERVER
-    // ========================================================
+    // ====================================================
+    // CONNECT TO SIGNALING SERVER
+    // ====================================================
 
-    /*
-        IMPORTANT:
-
-        Our server.js is running on:
-
-            localhost
-            port 3000
-
-        So we connect to:
-
-            ws://localhost:3000
-
-        NOT:
-
-            ws://localhost:3000/ws
-
-        because the server.js version we're using currently
-        does not require the /ws path.
-    */
-
-    const signal = new WebSocket(
-        "wss://body-signaling.reeseyh18.workers.dev/ws"
-    );
+    const signal =
+        new WebSocket(
+            SIGNALING_URL
+        );
 
 
-    // ========================================================
-    // WEBSOCKET OPENED
-    // ========================================================
+    // ====================================================
+    // WEBSOCKET CONNECTED
+    // ====================================================
 
     signal.onopen = () => {
 
@@ -223,16 +242,9 @@
             "Connected to signaling server"
         );
 
-        status.textContent =
-            "Connected to signaling server";
-
-
-        // Tell the signaling server:
-        //
-        // "I am the browser, and I want to join
-        //  the room called body-demo."
 
         signal.send(
+
             JSON.stringify({
 
                 type: "join",
@@ -242,179 +254,170 @@
                 role: "browser"
 
             })
+
         );
 
     };
 
 
-    // ========================================================
-    // RECEIVE MESSAGE FROM SIGNALING SERVER
-    // ========================================================
+    // ====================================================
+    // SIGNALING MESSAGES
+    // ====================================================
 
-    signal.onmessage = async (event) => {
-
-        console.log(
-            "SIGNAL RECEIVED:",
-            event.data
-        );
-
-
-        const message =
-            JSON.parse(event.data);
-
-
-        // ----------------------------------------------------
-        // SERVER SAYS BOTH SIDES ARE READY
-        // ----------------------------------------------------
-
-        if (message.type === "ready") {
+    signal.onmessage =
+        async (event) => {
 
             console.log(
-                "TouchDesigner is ready!"
-            );
-
-            status.textContent =
-                "TouchDesigner connected. Starting camera...";
-
-
-            await startWebRTC();
-
-        }
-
-
-        // ----------------------------------------------------
-        // TOUCHDESIGNER SENT AN ANSWER
-        // ----------------------------------------------------
-
-        else if (message.type === "answer") {
-
-            console.log(
-                "Received answer from TouchDesigner"
-            );
-
-            status.textContent =
-                "Received TouchDesigner answer";
-
-
-            await pc.setRemoteDescription(
-                new RTCSessionDescription(
-                    message.sdp
-                )
+                "SIGNAL RECEIVED:",
+                event.data
             );
 
 
-            // Add any ICE candidates that arrived
-            // before the remote description.
-            while (
-                pendingCandidates.length > 0
+            const message =
+                JSON.parse(
+                    event.data
+                );
+
+
+            // ------------------------------------------------
+            // BOTH BROWSER + TOUCHDESIGNER ARE READY
+            // ------------------------------------------------
+
+            if (
+                message.type === "ready"
+            ) {
+
+                console.log(
+                    "TouchDesigner is ready"
+                );
+
+
+                await startWebRTC();
+
+            }
+
+
+            // ------------------------------------------------
+            // TOUCHDESIGNER ANSWER
+            // ------------------------------------------------
+
+            else if (
+                message.type === "answer"
+            ) {
+
+                console.log(
+                    "Received answer from TouchDesigner"
+                );
+
+
+                await pc.setRemoteDescription(
+
+                    new RTCSessionDescription(
+                        message.sdp
+                    )
+
+                );
+
+
+                // Add candidates that arrived
+                // before the remote description.
+                while (
+                    pendingCandidates.length > 0
+                ) {
+
+                    const candidate =
+                        pendingCandidates.shift();
+
+
+                    await pc.addIceCandidate(
+                        candidate
+                    );
+
+                }
+
+            }
+
+
+            // ------------------------------------------------
+            // TOUCHDESIGNER ICE CANDIDATE
+            // ------------------------------------------------
+
+            else if (
+                message.type === "candidate"
             ) {
 
                 const candidate =
-                    pendingCandidates.shift();
+                    new RTCIceCandidate(
+                        message.candidate
+                    );
 
 
-                await pc.addIceCandidate(
-                    candidate
+                if (
+                    pc.remoteDescription
+                ) {
+
+                    await pc.addIceCandidate(
+                        candidate
+                    );
+
+                }
+
+                else {
+
+                    pendingCandidates.push(
+                        candidate
+                    );
+
+                }
+
+            }
+
+
+            // ------------------------------------------------
+            // TOUCHDESIGNER LEFT
+            // ------------------------------------------------
+
+            else if (
+                message.type === "peer-left"
+            ) {
+
+                console.log(
+                    "TouchDesigner disconnected"
+                );
+
+
+                processedVideo.srcObject =
+                    null;
+
+            }
+
+
+            // ------------------------------------------------
+            // ERROR
+            // ------------------------------------------------
+
+            else if (
+                message.type === "error"
+            ) {
+
+                console.error(
+                    "SIGNALING ERROR:",
+                    message.message
                 );
 
             }
 
-        }
+        };
 
 
-        // ----------------------------------------------------
-        // TOUCHDESIGNER SENT AN ICE CANDIDATE
-        // ----------------------------------------------------
-
-        else if (message.type === "candidate") {
-
-            console.log(
-                "Received ICE candidate"
-            );
-
-
-            const candidate =
-                new RTCIceCandidate(
-                    message.candidate
-                );
-
-
-            if (pc.remoteDescription) {
-
-                await pc.addIceCandidate(
-                    candidate
-                );
-
-            }
-
-            else {
-
-                pendingCandidates.push(
-                    candidate
-                );
-
-            }
-
-        }
-
-
-        // ----------------------------------------------------
-        // TOUCHDESIGNER DISCONNECTED
-        // ----------------------------------------------------
-
-        else if (
-            message.type === "peer-left"
-        ) {
-
-            console.log(
-                "TouchDesigner disconnected"
-            );
-
-            status.textContent =
-                "TouchDesigner disconnected";
-
-
-            processedVideo.srcObject =
-                null;
-
-        }
-
-
-        // ----------------------------------------------------
-        // ERROR
-        // ----------------------------------------------------
-
-        else if (
-            message.type === "error"
-        ) {
-
-            console.error(
-                "SIGNALING ERROR:",
-                message.message
-            );
-
-            status.textContent =
-                "Signaling error: " +
-                message.message;
-
-        }
-
-    };
-
-
-    // ========================================================
+    // ====================================================
     // START WEBRTC
-    // ========================================================
+    // ====================================================
 
     async function startWebRTC() {
 
-        // Prevent this function from accidentally
-        // running twice.
+        // Don't start twice.
         if (started) {
-
-            console.log(
-                "WebRTC already started"
-            );
 
             return;
 
@@ -428,34 +431,35 @@
         );
 
 
-        // ----------------------------------------------------
-        // ASK FOR CAMERA ACCESS
-        // ----------------------------------------------------
+        // ------------------------------------------------
+        // REQUEST CAMERA
+        // ------------------------------------------------
 
         try {
 
             cameraStream =
-                await navigator.mediaDevices.getUserMedia({
+                await navigator.mediaDevices
+                    .getUserMedia({
 
-                    video: {
+                        video: {
 
-                        width: {
-                            ideal: 1440
+                            width: {
+                                ideal: 1440
+                            },
+
+                            height: {
+                                ideal: 2560
+                            },
+
+                            frameRate: {
+                                ideal: 30
+                            }
+
                         },
 
-                        height: {
-                            ideal: 2560
-                        },
+                        audio: false
 
-                        frameRate: {
-                            ideal: 30
-                        }
-
-                    },
-
-                    audio: false
-
-                });
+                    });
 
         }
 
@@ -464,14 +468,6 @@
             console.error(
                 "Camera error:",
                 error
-            );
-
-            status.textContent =
-                "Camera error: " +
-                error.message;
-
-            alert(
-                "Please allow camera access."
             );
 
             return;
@@ -484,17 +480,17 @@
         );
 
 
-        // ----------------------------------------------------
-        // SHOW CAMERA LOCALLY
-        // ----------------------------------------------------
+        // ------------------------------------------------
+        // DISPLAY LOCAL CAMERA PREVIEW
+        // ------------------------------------------------
 
         localVideo.srcObject =
             cameraStream;
 
 
-        // ----------------------------------------------------
+        // ------------------------------------------------
         // SEND CAMERA TO TOUCHDESIGNER
-        // ----------------------------------------------------
+        // ------------------------------------------------
 
         for (
             const track
@@ -509,9 +505,9 @@
         }
 
 
-        // ----------------------------------------------------
+        // ------------------------------------------------
         // CREATE WEBRTC OFFER
-        // ----------------------------------------------------
+        // ------------------------------------------------
 
         const offer =
             await pc.createOffer();
@@ -527,184 +523,127 @@
         );
 
 
-        status.textContent =
-            "Sending WebRTC offer to TouchDesigner";
-
-
-        // ----------------------------------------------------
-        // SEND OFFER THROUGH WEBSOCKET
-        // ----------------------------------------------------
+        // ------------------------------------------------
+        // SEND OFFER THROUGH WSS
+        // ------------------------------------------------
 
         signal.send(
+
             JSON.stringify({
 
                 type: "offer",
 
-                sdp: pc.localDescription
+                sdp:
+                    pc.localDescription
 
             })
+
         );
 
     }
 
 
-    // ========================================================
+    // ====================================================
     // SEND ICE CANDIDATES TO TOUCHDESIGNER
-    // ========================================================
+    // ====================================================
 
-    pc.onicecandidate = (event) => {
+    pc.onicecandidate =
+        (event) => {
 
-        if (!event.candidate) {
+            if (
+                !event.candidate
+            ) {
 
-            return;
+                return;
 
-        }
-
-
-        console.log(
-            "Sending ICE candidate"
-        );
+            }
 
 
-        signal.send(
-            JSON.stringify({
+            signal.send(
 
-                type: "candidate",
+                JSON.stringify({
 
-                candidate: {
+                    type: "candidate",
 
-                    candidate:
-                        event.candidate.candidate,
+                    candidate: {
 
-                    sdpMid:
-                        event.candidate.sdpMid,
+                        candidate:
+                            event.candidate
+                                .candidate,
 
-                    sdpMLineIndex:
-                        event.candidate.sdpMLineIndex
+                        sdpMid:
+                            event.candidate
+                                .sdpMid,
 
-                }
+                        sdpMLineIndex:
+                            event.candidate
+                                .sdpMLineIndex
 
-            })
-        );
+                    }
 
-    };
+                })
 
-
-    // ========================================================
-    // RECEIVE VIDEO FROM TOUCHDESIGNER
-    // ========================================================
-
-    pc.ontrack = (event) => {
-
-    console.log(
-        "===================================="
-    );
-
-    console.log(
-        "RECEIVED VIDEO FROM TOUCHDESIGNER"
-    );
-
-    console.log(
-        "Track:",
-        event.track
-    );
-
-    console.log(
-        "Track kind:",
-        event.track.kind
-    );
-
-    console.log(
-        "Track readyState:",
-        event.track.readyState
-    );
-
-    console.log(
-        "===================================="
-    );
-
-
-    if (
-        event.streams &&
-        event.streams[0]
-    ) {
-
-        processedVideo.srcObject =
-            event.streams[0];
-
-
-        processedVideo.onloadedmetadata = () => {
-
-            console.log(
-                "Processed video metadata loaded"
-            );
-
-            console.log(
-                "Video width:",
-                processedVideo.videoWidth
-            );
-
-            console.log(
-                "Video height:",
-                processedVideo.videoHeight
             );
 
         };
 
 
-        processedVideo.onplaying = () => {
+    // ====================================================
+    // RECEIVE TOUCHDESIGNER VIDEO
+    // ====================================================
+
+    pc.ontrack =
+        (event) => {
 
             console.log(
-                "Processed video is PLAYING"
+                "Received video track from TouchDesigner"
+            );
+
+
+            if (
+                event.streams &&
+                event.streams[0]
+            ) {
+
+                processedVideo.srcObject =
+                    event.streams[0];
+
+
+                processedVideo.play()
+                    .catch(
+                        (error) => {
+
+                            console.error(
+                                "Video play error:",
+                                error
+                            );
+
+                        }
+                    );
+
+            }
+
+        };
+
+
+    // ====================================================
+    // WEBRTC CONNECTION STATE
+    // ====================================================
+
+    pc.onconnectionstatechange =
+        () => {
+
+            console.log(
+                "WebRTC connection state:",
+                pc.connectionState
             );
 
         };
 
 
-        processedVideo.play()
-            .then(() => {
-
-                console.log(
-                    "processedVideo.play() succeeded"
-                );
-
-            })
-            .catch((error) => {
-
-                console.error(
-                    "processedVideo.play() failed:",
-                    error
-                );
-
-            });
-
-    }
-
-};
-
-
-    // ========================================================
-    // WEBRTC CONNECTION STATUS
-    // ========================================================
-
-    pc.onconnectionstatechange = () => {
-
-        console.log(
-            "WebRTC connection state:",
-            pc.connectionState
-        );
-
-
-        status.textContent =
-            "WebRTC: " +
-            pc.connectionState;
-
-    };
-
-
-    // ========================================================
+    // ====================================================
     // WEBSOCKET CLOSED
-    // ========================================================
+    // ====================================================
 
     signal.onclose = () => {
 
@@ -712,32 +651,26 @@
             "Signaling server disconnected"
         );
 
-
-        status.textContent =
-            "Signaling server disconnected";
-
     };
 
 
-    // ========================================================
+    // ====================================================
     // WEBSOCKET ERROR
-    // ========================================================
+    // ====================================================
 
-    signal.onerror = (error) => {
+    signal.onerror =
+        (error) => {
 
-        console.error(
-            "WebSocket error:",
-            error
-        );
+            console.error(
+                "WebSocket error:",
+                error
+            );
 
-
-        status.textContent =
-            "WebSocket error — check server";
-
-    };
+        };
 
 </script>
 ```
 
 </body>
+
 </html>
