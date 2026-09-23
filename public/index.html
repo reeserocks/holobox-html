@@ -4,9 +4,13 @@
 
 <head>
 
+```
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>Happy 15th Anniversary!</title>
 
@@ -28,7 +32,7 @@
 
         overflow: hidden;
 
-        background: #fff;
+        background: #000;
 
     }
 
@@ -61,16 +65,13 @@
            1440 x 2560
 
        Aspect ratio:
-           1440 / 2560 = 9 / 16
+           9 / 16
 
-       Using 25% of the screen height:
-           2560 × 0.25 = 640px
+       25% screen height:
+           640px
 
-       At 9:16:
-           640 × (9/16) = 360px
-
-       So on a 1440 x 2560 screen this becomes:
-           360 x 640
+       Corresponding width:
+           360px
        ===================================================== */
 
     #localVideo {
@@ -88,11 +89,12 @@
         object-fit: cover;
         object-position: center;
 
+        /* Mirror the user's camera preview. */
         transform: scaleX(-1);
 
         z-index: 10;
 
-        background: #fff;
+        background: #111;
 
         border: 3px solid rgba(
             255,
@@ -104,15 +106,6 @@
         border-radius: 8px;
 
         box-sizing: border-box;
-
-    }
-
-
-    /* =====================================================
-       VERY SUBTLE SHADOW AROUND CAMERA
-       ===================================================== */
-
-    #localVideo {
 
         box-shadow:
             0 8px 30px rgba(
@@ -126,21 +119,208 @@
 
 
     /* =====================================================
-       HIDE ELEMENTS UNTIL THEY HAVE VIDEO
+       DEBUG OVERLAY
        ===================================================== */
 
-    video {
+    #debugOverlay {
 
-        display: block;
+        position: fixed;
+
+        top: 24px;
+        left: 24px;
+
+        z-index: 100;
+
+        min-width: 300px;
+
+        padding: 16px 18px;
+
+        box-sizing: border-box;
+
+        font-family:
+            "Courier New",
+            monospace;
+
+        font-size: 13px;
+        line-height: 1.5;
+
+        color: #fff;
+
+        background:
+            rgba(0, 0, 0, 0.78);
+
+        border:
+            1px solid rgba(
+                255,
+                255,
+                255,
+                0.25
+            );
+
+        border-radius: 8px;
+
+        box-shadow:
+            0 8px 30px rgba(
+                0,
+                0,
+                0,
+                0.3
+            );
+
+    }
+
+
+    /* =====================================================
+       DEBUG HEADER
+       ===================================================== */
+
+    #debugTitle {
+
+        margin-bottom: 10px;
+
+        font-family: Arial, sans-serif;
+
+        font-size: 13px;
+        font-weight: bold;
+
+        letter-spacing: 0.08em;
+
+        text-transform: uppercase;
+
+        opacity: 0.8;
+
+    }
+
+
+    /* =====================================================
+       DEBUG ROWS
+       ===================================================== */
+
+    .debugRow {
+
+        display: flex;
+
+        justify-content: space-between;
+
+        gap: 20px;
+
+        white-space: nowrap;
+
+    }
+
+
+    .debugLabel {
+
+        opacity: 0.65;
+
+    }
+
+
+    .debugValue {
+
+        text-align: right;
+
+    }
+
+
+    /* =====================================================
+       STATUS COLORS
+       ===================================================== */
+
+    .status-good {
+
+        color: #6cff8f;
+
+    }
+
+
+    .status-warn {
+
+        color: #ffd86c;
+
+    }
+
+
+    .status-bad {
+
+        color: #ff6c6c;
+
+    }
+
+
+    /* =====================================================
+       DEBUG FOOTER
+       ===================================================== */
+
+    #debugHint {
+
+        margin-top: 10px;
+
+        padding-top: 8px;
+
+        border-top:
+            1px solid rgba(
+                255,
+                255,
+                255,
+                0.15
+            );
+
+        font-family: Arial, sans-serif;
+
+        font-size: 11px;
+
+        opacity: 0.45;
+
+    }
+
+
+    /* =====================================================
+       CAMERA ERROR MESSAGE
+       ===================================================== */
+
+    #cameraError {
+
+        display: none;
+
+        position: fixed;
+
+        left: 50%;
+        top: 50%;
+
+        transform:
+            translate(-50%, -50%);
+
+        z-index: 200;
+
+        padding: 20px 24px;
+
+        max-width: 500px;
+
+        font-family: Arial, sans-serif;
+
+        font-size: 18px;
+        line-height: 1.4;
+
+        text-align: center;
+
+        color: white;
+
+        background:
+            rgba(0, 0, 0, 0.9);
+
+        border-radius: 8px;
 
     }
 
 </style>
+```
 
 </head>
 
 <body>
 
+```
 <!-- =====================================================
      TOUCHDESIGNER OUTPUT
      ===================================================== -->
@@ -164,7 +344,151 @@
 </video>
 
 
+<!-- =====================================================
+     DEBUG OVERLAY
+     ===================================================== -->
+
+<div id="debugOverlay">
+
+    <div id="debugTitle">
+        Holobox Debug
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            SIGNALING
+        </span>
+
+        <span
+            id="debugSignaling"
+            class="debugValue status-warn">
+            CONNECTING
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            WEBRTC
+        </span>
+
+        <span
+            id="debugWebRTC"
+            class="debugValue status-warn">
+            NEW
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            ICE
+        </span>
+
+        <span
+            id="debugICE"
+            class="debugValue status-warn">
+            NEW
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            CAMERA
+        </span>
+
+        <span
+            id="debugCamera"
+            class="debugValue status-warn">
+            WAITING
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            REMOTE VIDEO
+        </span>
+
+        <span
+            id="debugRemote"
+            class="debugValue status-warn">
+            WAITING
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            LOCAL RESOLUTION
+        </span>
+
+        <span
+            id="debugLocalResolution"
+            class="debugValue">
+            —
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            REMOTE RESOLUTION
+        </span>
+
+        <span
+            id="debugRemoteResolution"
+            class="debugValue">
+            —
+        </span>
+
+    </div>
+
+
+    <div id="debugHint">
+        Development overlay — hide before final installation.
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     CAMERA ERROR
+     ===================================================== -->
+
+<div id="cameraError"></div>
+
+
 <script>
+
+    // ====================================================
+    // DEBUG MODE
+    // ====================================================
+
+    /*
+        Set this to false when you're ready for the
+        clean installation version.
+
+        For now, keep it TRUE.
+    */
+
+    const DEBUG_MODE = true;
+
 
     // ====================================================
     // HTML ELEMENTS
@@ -182,16 +506,137 @@
         );
 
 
+    const debugOverlay =
+        document.getElementById(
+            "debugOverlay"
+        );
+
+
+    const cameraError =
+        document.getElementById(
+            "cameraError"
+        );
+
+
+    const debugSignaling =
+        document.getElementById(
+            "debugSignaling"
+        );
+
+
+    const debugWebRTC =
+        document.getElementById(
+            "debugWebRTC"
+        );
+
+
+    const debugICE =
+        document.getElementById(
+            "debugICE"
+        );
+
+
+    const debugCamera =
+        document.getElementById(
+            "debugCamera"
+        );
+
+
+    const debugRemote =
+        document.getElementById(
+            "debugRemote"
+        );
+
+
+    const debugLocalResolution =
+        document.getElementById(
+            "debugLocalResolution"
+        );
+
+
+    const debugRemoteResolution =
+        document.getElementById(
+            "debugRemoteResolution"
+        );
+
+
     // ====================================================
-    // CLOUDFARE WORKER / WEBSOCKET
+    // ENABLE / DISABLE DEBUG OVERLAY
     // ====================================================
+
+    if (!DEBUG_MODE) {
+
+        debugOverlay.style.display =
+            "none";
+
+    }
+
+
+    // ====================================================
+    // HELPER: UPDATE DEBUG STATUS
+    // ====================================================
+
+    function setStatus(
+        element,
+        text,
+        state
+    ) {
+
+        element.textContent =
+            text;
+
+        element.classList.remove(
+            "status-good",
+            "status-warn",
+            "status-bad"
+        );
+
+
+        if (state === "good") {
+
+            element.classList.add(
+                "status-good"
+            );
+
+        }
+
+        else if (
+            state === "bad"
+        ) {
+
+            element.classList.add(
+                "status-bad"
+            );
+
+        }
+
+        else {
+
+            element.classList.add(
+                "status-warn"
+            );
+
+        }
+
+    }
+
+
+    // ====================================================
+    // SIGNALING SERVER
+    // ====================================================
+
+    /*
+        This is the Cloudflare Worker.
+
+        Keep your existing working URL here.
+    */
 
     const SIGNALING_URL =
         "wss://body-signaling.reeseyh18.workers.dev/ws";
 
 
     // ====================================================
-    // WEBRTC CONNECTION
+    // WEBRTC
     // ====================================================
 
     const pc =
@@ -200,8 +645,10 @@
             iceServers: [
 
                 {
+
                     urls:
                         "stun:stun.l.google.com:19302"
+
                 }
 
             ]
@@ -221,7 +668,18 @@
 
 
     // ====================================================
-    // CONNECT TO SIGNALING SERVER
+    // INITIAL WEBRTC DEBUG STATUS
+    // ====================================================
+
+    setStatus(
+        debugWebRTC,
+        pc.connectionState.toUpperCase(),
+        "warn"
+    );
+
+
+    // ====================================================
+    // SIGNALING CONNECTION
     // ====================================================
 
     const signal =
@@ -231,13 +689,20 @@
 
 
     // ====================================================
-    // WEBSOCKET CONNECTED
+    // SIGNALING OPEN
     // ====================================================
 
     signal.onopen = () => {
 
         console.log(
             "Connected to signaling server"
+        );
+
+
+        setStatus(
+            debugSignaling,
+            "CONNECTED",
+            "good"
         );
 
 
@@ -259,7 +724,7 @@
 
 
     // ====================================================
-    // SIGNALING MESSAGES
+    // SIGNALING MESSAGE
     // ====================================================
 
     signal.onmessage =
@@ -278,10 +743,26 @@
 
 
             // ------------------------------------------------
-            // BOTH BROWSER + TOUCHDESIGNER ARE READY
+            // JOINED
             // ------------------------------------------------
 
             if (
+                message.type === "joined"
+            ) {
+
+                console.log(
+                    "Joined signaling room:",
+                    message.room
+                );
+
+            }
+
+
+            // ------------------------------------------------
+            // READY
+            // ------------------------------------------------
+
+            else if (
                 message.type === "ready"
             ) {
 
@@ -296,7 +777,7 @@
 
 
             // ------------------------------------------------
-            // TOUCHDESIGNER ANSWER
+            // ANSWER
             // ------------------------------------------------
 
             else if (
@@ -317,8 +798,6 @@
                 );
 
 
-                // Add candidates that arrived
-                // before the remote description.
                 while (
                     pendingCandidates.length > 0
                 ) {
@@ -337,7 +816,7 @@
 
 
             // ------------------------------------------------
-            // TOUCHDESIGNER ICE CANDIDATE
+            // ICE CANDIDATE
             // ------------------------------------------------
 
             else if (
@@ -384,6 +863,20 @@
                 );
 
 
+                setStatus(
+                    debugWebRTC,
+                    "DISCONNECTED",
+                    "bad"
+                );
+
+
+                setStatus(
+                    debugRemote,
+                    "DISCONNECTED",
+                    "bad"
+                );
+
+
                 processedVideo.srcObject =
                     null;
 
@@ -391,7 +884,7 @@
 
 
             // ------------------------------------------------
-            // ERROR
+            // SERVER ERROR
             // ------------------------------------------------
 
             else if (
@@ -401,6 +894,13 @@
                 console.error(
                     "SIGNALING ERROR:",
                     message.message
+                );
+
+
+                setStatus(
+                    debugSignaling,
+                    "ERROR",
+                    "bad"
                 );
 
             }
@@ -414,12 +914,12 @@
 
     async function startWebRTC() {
 
-        // Don't start twice.
         if (started) {
 
             return;
 
         }
+
 
         started = true;
 
@@ -430,7 +930,7 @@
 
 
         // ------------------------------------------------
-        // REQUEST CAMERA
+        // GET CAMERA
         // ------------------------------------------------
 
         try {
@@ -468,6 +968,24 @@
                 error
             );
 
+
+            setStatus(
+                debugCamera,
+                "ERROR",
+                "bad"
+            );
+
+
+            cameraError.textContent =
+                "Camera access failed. " +
+                "Please make sure the Holobox browser " +
+                "has permission to use the camera.";
+
+
+            cameraError.style.display =
+                "block";
+
+
             return;
 
         }
@@ -479,11 +997,30 @@
 
 
         // ------------------------------------------------
-        // DISPLAY LOCAL CAMERA PREVIEW
+        // SHOW CAMERA
         // ------------------------------------------------
 
         localVideo.srcObject =
             cameraStream;
+
+
+        setStatus(
+            debugCamera,
+            "CONNECTED",
+            "good"
+        );
+
+
+        // Display actual camera resolution.
+        localVideo.onloadedmetadata =
+            () => {
+
+                debugLocalResolution.textContent =
+                    localVideo.videoWidth +
+                    " × " +
+                    localVideo.videoHeight;
+
+            };
 
 
         // ------------------------------------------------
@@ -504,7 +1041,7 @@
 
 
         // ------------------------------------------------
-        // CREATE WEBRTC OFFER
+        // CREATE OFFER
         // ------------------------------------------------
 
         const offer =
@@ -522,7 +1059,7 @@
 
 
         // ------------------------------------------------
-        // SEND OFFER THROUGH WSS
+        // SEND OFFER
         // ------------------------------------------------
 
         signal.send(
@@ -542,7 +1079,7 @@
 
 
     // ====================================================
-    // SEND ICE CANDIDATES TO TOUCHDESIGNER
+    // SEND ICE CANDIDATES
     // ====================================================
 
     pc.onicecandidate =
@@ -587,6 +1124,68 @@
 
 
     // ====================================================
+    // ICE CONNECTION STATE
+    // ====================================================
+
+    pc.oniceconnectionstatechange =
+        () => {
+
+            console.log(
+                "ICE state:",
+                pc.iceConnectionState
+            );
+
+
+            setStatus(
+                debugICE,
+                pc.iceConnectionState
+                    .toUpperCase(),
+                pc.iceConnectionState ===
+                    "connected" ||
+                pc.iceConnectionState ===
+                    "completed"
+                    ? "good"
+                    : pc.iceConnectionState ===
+                        "failed"
+                        ? "bad"
+                        : "warn"
+            );
+
+        };
+
+
+    // ====================================================
+    // WEBRTC CONNECTION STATE
+    // ====================================================
+
+    pc.onconnectionstatechange =
+        () => {
+
+            console.log(
+                "WebRTC connection state:",
+                pc.connectionState
+            );
+
+
+            setStatus(
+                debugWebRTC,
+                pc.connectionState
+                    .toUpperCase(),
+                pc.connectionState ===
+                    "connected"
+                    ? "good"
+                    : pc.connectionState ===
+                        "failed" ||
+                      pc.connectionState ===
+                        "disconnected"
+                        ? "bad"
+                        : "warn"
+            );
+
+        };
+
+
+    // ====================================================
     // RECEIVE TOUCHDESIGNER VIDEO
     // ====================================================
 
@@ -607,6 +1206,36 @@
                     event.streams[0];
 
 
+                setStatus(
+                    debugRemote,
+                    "RECEIVED",
+                    "good"
+                );
+
+
+                processedVideo.onloadedmetadata =
+                    () => {
+
+                        debugRemoteResolution.textContent =
+                            processedVideo.videoWidth +
+                            " × " +
+                            processedVideo.videoHeight;
+
+                    };
+
+
+                processedVideo.onplaying =
+                    () => {
+
+                        setStatus(
+                            debugRemote,
+                            "PLAYING",
+                            "good"
+                        );
+
+                    };
+
+
                 processedVideo.play()
                     .catch(
                         (error) => {
@@ -616,25 +1245,16 @@
                                 error
                             );
 
+                            setStatus(
+                                debugRemote,
+                                "PLAY ERROR",
+                                "bad"
+                            );
+
                         }
                     );
 
             }
-
-        };
-
-
-    // ====================================================
-    // WEBRTC CONNECTION STATE
-    // ====================================================
-
-    pc.onconnectionstatechange =
-        () => {
-
-            console.log(
-                "WebRTC connection state:",
-                pc.connectionState
-            );
 
         };
 
@@ -647,6 +1267,13 @@
 
         console.log(
             "Signaling server disconnected"
+        );
+
+
+        setStatus(
+            debugSignaling,
+            "DISCONNECTED",
+            "bad"
         );
 
     };
@@ -662,6 +1289,13 @@
             console.error(
                 "WebSocket error:",
                 error
+            );
+
+
+            setStatus(
+                debugSignaling,
+                "ERROR",
+                "bad"
             );
 
         };
