@@ -61,16 +61,16 @@
        LOCAL CAMERA PREVIEW
        
        Holobox:
-           1440 x 2560
+           2160 x 3840
 
        Aspect ratio:
            9 / 16
 
        25% screen height:
-           640px
+           960px
 
        Corresponding width:
-           360px
+           540px
        ===================================================== */
 
     #localVideo {
@@ -87,9 +87,6 @@
 
         object-fit: cover;
         object-position: center;
-
-        /* Mirror the user's camera preview. */
-        transform: scaleX(-1);
 
         z-index: 10;
 
@@ -248,33 +245,6 @@
 
 
     /* =====================================================
-       DEBUG FOOTER
-       ===================================================== */
-
-    #debugHint {
-
-        margin-top: 10px;
-
-        padding-top: 8px;
-
-        border-top:
-            1px solid rgba(
-                255,
-                255,
-                255,
-                0.15
-            );
-
-        font-family: Arial, sans-serif;
-
-        font-size: 11px;
-
-        opacity: 0.45;
-
-    }
-
-
-    /* =====================================================
        CAMERA ERROR MESSAGE
        ===================================================== */
 
@@ -387,21 +357,6 @@
     <div class="debugRow">
 
         <span class="debugLabel">
-            ICE
-        </span>
-
-        <span
-            id="debugICE"
-            class="debugValue status-warn">
-            NEW
-        </span>
-
-    </div>
-
-
-    <div class="debugRow">
-
-        <span class="debugLabel">
             CAMERA
         </span>
 
@@ -432,11 +387,26 @@
     <div class="debugRow">
 
         <span class="debugLabel">
-            LOCAL RESOLUTION
+            CAMERA REQUESTED
         </span>
 
         <span
-            id="debugLocalResolution"
+            id="debugCameraRequested"
+            class="debugValue">
+            —
+        </span>
+
+    </div>
+
+
+    <div class="debugRow">
+
+        <span class="debugLabel">
+            CAMERA ACTUAL
+        </span>
+
+        <span
+            id="debugCameraActual"
             class="debugValue">
             —
         </span>
@@ -476,10 +446,9 @@
     // ====================================================
 
     /*
-        Set this to false when you're ready for the
-        clean installation version.
+        Set this to false when ready for the clean 
+        installation version.
 
-        For now, keep it TRUE.
     */
 
     const DEBUG_MODE = true;
@@ -525,12 +494,6 @@
         );
 
 
-    const debugICE =
-        document.getElementById(
-            "debugICE"
-        );
-
-
     const debugCamera =
         document.getElementById(
             "debugCamera"
@@ -543,9 +506,15 @@
         );
 
 
-    const debugLocalResolution =
+    const debugCameraRequested =
         document.getElementById(
-            "debugLocalResolution"
+            "debugCameraRequested"
+        );
+
+
+    const debugCameraActual =
+        document.getElementById(
+            "debugCameraActual"
         );
 
 
@@ -619,12 +588,6 @@
     // ====================================================
     // SIGNALING SERVER
     // ====================================================
-
-    /*
-        This is the Cloudflare Worker.
-
-        Keep your existing working URL here.
-    */
 
     const SIGNALING_URL =
         "wss://body-signaling.reeseyh18.workers.dev/ws";
@@ -937,15 +900,15 @@
                         video: {
 
                             width: {
-                                ideal: 1440
+                                ideal: 2160
                             },
 
                             height: {
-                                ideal: 2560
+                                ideal: 3840
                             },
 
                             frameRate: {
-                                ideal: 30
+                                ideal: 60
                             }
 
                         },
@@ -1005,12 +968,15 @@
             "good"
         );
 
+        debugCameraRequested.textContent =
+            "2160 × 3840 @ 60 FPS";
+
 
         // Display actual camera resolution.
         localVideo.onloadedmetadata =
             () => {
 
-                debugLocalResolution.textContent =
+                debugCameraActual.textContent =
                     localVideo.videoWidth +
                     " × " +
                     localVideo.videoHeight;
@@ -1117,38 +1083,7 @@
 
         };
 
-
-    // ====================================================
-    // ICE CONNECTION STATE
-    // ====================================================
-
-    pc.oniceconnectionstatechange =
-        () => {
-
-            console.log(
-                "ICE state:",
-                pc.iceConnectionState
-            );
-
-
-            setStatus(
-                debugICE,
-                pc.iceConnectionState
-                    .toUpperCase(),
-                pc.iceConnectionState ===
-                    "connected" ||
-                pc.iceConnectionState ===
-                    "completed"
-                    ? "good"
-                    : pc.iceConnectionState ===
-                        "failed"
-                        ? "bad"
-                        : "warn"
-            );
-
-        };
-
-
+        
     // ====================================================
     // WEBRTC CONNECTION STATE
     // ====================================================
